@@ -1,0 +1,15 @@
+import express from 'express';
+import helmet from 'helmet';
+import mongoose from 'mongoose';
+import { AppError, errorHandler, requestContext } from './shared/http';
+import { userRouter } from './modules/users/user.routes';
+import { sessionRouter } from './modules/sessions/session.routes';
+export const app = express();
+app.disable('x-powered-by');
+app.use(requestContext, helmet(), express.json({ limit: '16kb' }));
+app.get('/health', (_req, res) => { res.json({ status: 'ok' }); });
+app.get('/ready', (_req, res) => { const ready = mongoose.connection.readyState === 1; res.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'unavailable' }); });
+app.use('/users', userRouter);
+app.use('/sessions', sessionRouter);
+app.use((_req, _res, next) => next(new AppError(404, 'ROUTE_NOT_FOUND', 'Route not found.')));
+app.use(errorHandler);

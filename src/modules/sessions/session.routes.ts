@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { asyncRoute } from '../../shared/http';
+import { availableQuery, bookBody, createSessionBody, idParams } from '../../shared/validation';
+import * as service from './session.service';
+export const sessionRouter = Router();
+sessionRouter.post('/', asyncRoute(async (req, res) => { res.status(201).json({ data: await service.createSession(createSessionBody.parse(req.body)) }); }));
+sessionRouter.get('/available', asyncRoute(async (req, res) => { const q = availableQuery.parse(req.query); res.json({ data: await service.availableOnDate(q.dateTimestamp, q.page, q.limit), pagination: { page: q.page, limit: q.limit } }); }));
+sessionRouter.post('/:id/book', asyncRoute(async (req, res) => { const { id } = idParams.parse(req.params); const { userId } = bookBody.parse(req.body); res.json({ data: await service.bookSession(id, userId) }); }));
+sessionRouter.patch('/:id/complete', asyncRoute(async (req, res) => { const { id } = idParams.parse(req.params); z.object({}).strict().parse(req.body ?? {}); res.json({ data: await service.completeSession(id) }); }));

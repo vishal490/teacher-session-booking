@@ -1,0 +1,11 @@
+import { z } from 'zod';
+export const objectId = z.string().regex(/^[a-fA-F0-9]{24}$/, 'Expected a 24-character hexadecimal ObjectId');
+export const idParams = z.object({ id: objectId });
+const page = z.coerce.number().int().min(1).max(10000).default(1);
+const limit = z.coerce.number().int().min(1).max(100).default(20);
+export const pagination = { page, limit };
+export const createUserBody = z.object({ fullName: z.string().trim().min(1).max(150), email: z.string().trim().toLowerCase().email().max(254), phone: z.string().trim().min(1).max(30) }).strict();
+export const createSessionBody = z.object({ teacherId: objectId, startTime: z.string().datetime({ offset: true }), endTime: z.string().datetime({ offset: true }) }).strict().refine(v => new Date(v.endTime) > new Date(v.startTime), { message: 'endTime must be greater than startTime', path: ['endTime'] });
+export const bookBody = z.object({ userId: objectId }).strict();
+export const availableQuery = z.object({ ...pagination, dateTimestamp: z.string().regex(/^\d+$/, 'Expected Unix milliseconds').transform(Number).refine(v => Number.isSafeInteger(v) && v >= 100000000000 && v <= 8640000000000000 - 86400000, 'Expected a valid Unix millisecond timestamp (1973 or later)') }).strict();
+export const historyQuery = z.object({ upcomingPage: page, completedPage: page, limit }).strict();
