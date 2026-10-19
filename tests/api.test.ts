@@ -77,3 +77,18 @@ test('history separates future bookings and completions and isolates users', asy
   const isolated = await request(app).get(`/users/${other._id}/sessions`).expect(200);
   assert.deepEqual(isolated.body.data.upcomingSessions, []); assert.deepEqual(isolated.body.data.completedSessions, []);
 });
+
+test('history paginates upcoming and completed sessions independently', async () => {
+  const { teacher, user } = await fixture();
+  const upcoming = [], completed = [];
+  for (let day = 1; day <= 3; day++) {
+    const dates = { startTime: new Date(`2099-01-0${day}T12:00:00Z`), endTime: new Date(`2099-01-0${day}T13:00:00Z`) };
+    upcoming.push(await Session.create({ ...dates, teacherId: teacher._id, userId: user._id, status: 'BOOKED' }));
+    completed.push(await Session.create({ ...dates, teacherId: teacher._id, userId: user._id, status: 'COMPLETED', completedAt: new Date(`2099-01-0${day}T14:00:00Z`) }));
+  }
+  const query = { upcomingPage: 2, completedPage: 3, limit: 1 };
+  const { body: { data } } = await request(app).get(`/users/${user._id}/sessions`).query(query).expect(200);
+  assert.deepEqual(data.pagination, query);
+  assert.deepEqual(data.upcomingSessions.map((s: { _id: string }) => s._id), [String(upcoming[1]._id)]);
+  assert.deepEqual(data.completedSessions.map((s: { _id: string }) => s._id), [String(completed[0]._id)]);
+});

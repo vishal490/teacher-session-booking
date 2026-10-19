@@ -25,7 +25,7 @@ npm test
 
 Tests start an isolated MongoDB using mongodb-memory-server; the first run downloads a MongoDB binary and needs network access. No application database is used. Configuration is validated at startup: `MONGODB_URI` is required, `PORT` defaults to 3000, and `NODE_ENV` defaults to development. `/health` provides liveness; `/ready` checks the database connection state.
 
-Dependency installation was blocked by this build session's network policy (`EACCES` accessing registry.npmjs.org). Consequently no lockfile was generated and compilation/integration tests could not be executed here. Run the commands above in a network-enabled environment and commit the generated `package-lock.json` before using `npm ci` for reproducible installs.
+Dependencies are locked in `package-lock.json`; use `npm ci` for reproducible installs. Type checking, compilation, all seven integration tests, and an HTTP smoke check of all eight routes have passed using an isolated MongoDB instance. The smoke check also verified the compiled seed script is idempotent and exercised the complete create, book, and complete session lifecycle.
 
 ## API
 

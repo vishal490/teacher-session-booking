@@ -13,11 +13,9 @@ async function transitionFailure(id: string, code: string, message: string): Pro
 }
 export async function bookSession(id: string, userId: string) {
   await requireUser(userId);
-  const session = await repository.bookAvailable(id, userId);
-  return session ?? transitionFailure(id, 'SESSION_NOT_AVAILABLE', 'Only available sessions can be booked.');
+  return await repository.bookAvailable(id, userId) ?? transitionFailure(id, 'SESSION_NOT_AVAILABLE', 'Only available sessions can be booked.');
 }
 export async function completeSession(id: string) {
-  const session = await repository.completeBooked(id);
-  return session ?? transitionFailure(id, 'SESSION_NOT_BOOKED', 'Only booked sessions can be completed.');
+  return await repository.completeBooked(id) ?? transitionFailure(id, 'SESSION_NOT_BOOKED', 'Only booked sessions can be completed.');
 }
 export const availableOnDate = repository.availableOnDate;
